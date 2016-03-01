@@ -20,35 +20,50 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.helpers;
+package eu.verdelhan.ta4j.indicators.trackers;
 
 import eu.verdelhan.ta4j.Decimal;
 import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.RecursiveCachedIndicator;
+import eu.verdelhan.ta4j.indicators.CachedIndicator;
+import eu.verdelhan.ta4j.indicators.helpers.AverageTrueRangeIndicator;
+import eu.verdelhan.ta4j.indicators.helpers.LowestValueIndicator;
+import eu.verdelhan.ta4j.indicators.simple.MinPriceIndicator;
 
 /**
- * Average of {@link DirectionalMovementDownIndicator directional movement down indicator}.
- * <p>
+ * The Chandelier Exit (short) Indicator.
+ * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chandelier_exit
  */
-public class AverageDirectionalMovementDownIndicator extends RecursiveCachedIndicator<Decimal> {
-    private final int timeFrame;
+public class ChandelierExitShortIndicator extends CachedIndicator<Decimal> {
 
-    private final DirectionalMovementDownIndicator dmdown;
+    private final LowestValueIndicator low;
+    
+    private final AverageTrueRangeIndicator atr;
+    
+    private final Decimal k;
 
-    public AverageDirectionalMovementDownIndicator(TimeSeries series, int timeFrame) {
+    /**
+     * Constructor.
+     * @param series the time series
+     */
+    public ChandelierExitShortIndicator(TimeSeries series) {
+        this(series, 22, Decimal.THREE);
+    }
+    
+    /**
+     * Constructor.
+     * @param series the time series
+     * @param timeFrame the time frame (usually 22)
+     * @param k the K multiplier for ATR (usually 3.0)
+     */
+    public ChandelierExitShortIndicator(TimeSeries series, int timeFrame, Decimal k) {
         super(series);
-        this.timeFrame = timeFrame;
-        dmdown = new DirectionalMovementDownIndicator(series);
+        low = new LowestValueIndicator(new MinPriceIndicator(series), timeFrame);
+        atr = new AverageTrueRangeIndicator(series, timeFrame);
+        this.k = k;
     }
 
     @Override
     protected Decimal calculate(int index) {
-        if (index == 0) {
-            return Decimal.ONE;
-        }
-        Decimal nbPeriods = Decimal.valueOf(timeFrame);
-        Decimal nbPeriodsMinusOne = Decimal.valueOf(timeFrame - 1);
-        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).dividedBy(nbPeriods).plus(dmdown.getValue(index).dividedBy(nbPeriods));
-
+        return low.getValue(index).plus(atr.getValue(index).multipliedBy(k));
     }
 }

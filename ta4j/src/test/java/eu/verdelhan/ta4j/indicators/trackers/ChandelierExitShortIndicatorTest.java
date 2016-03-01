@@ -20,8 +20,9 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.volatility;
+package eu.verdelhan.ta4j.indicators.trackers;
 
+import eu.verdelhan.ta4j.Decimal;
 import static eu.verdelhan.ta4j.TATestsUtils.assertDecimalEquals;
 import eu.verdelhan.ta4j.Tick;
 import eu.verdelhan.ta4j.TimeSeries;
@@ -31,7 +32,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MassIndexIndicatorTest {
+public class ChandelierExitShortIndicatorTest {
     
     private TimeSeries data;
 
@@ -54,25 +55,23 @@ public class MassIndexIndicatorTest {
         ticks.add(new MockTick(45.58, 45.55, 45.61, 45.39));
         ticks.add(new MockTick(45.45, 45.01, 45.55, 44.80));
         ticks.add(new MockTick(45.03, 44.23, 45.04, 44.17));
-        ticks.add(new MockTick(44.23, 43.95, 44.29, 43.81));
-        ticks.add(new MockTick(43.91, 43.08, 43.99, 43.08));
-        ticks.add(new MockTick(43.07, 43.55, 43.65, 43.06));
-        ticks.add(new MockTick(43.56, 43.95, 43.99, 43.53));
-        ticks.add(new MockTick(43.93, 44.47, 44.58, 43.93));
 
         data = new TimeSeries(ticks);
     }
 
     @Test
     public void massIndexUsing3And8TimeFrames() {
-        MassIndexIndicator massIndex = new MassIndexIndicator(data, 3, 8);
+        ChandelierExitShortIndicator ces = new ChandelierExitShortIndicator(data, 5, Decimal.TWO);
 
-        assertDecimalEquals(massIndex.getValue(0), 1);
-        assertDecimalEquals(massIndex.getValue(14), 9.1158);
-        assertDecimalEquals(massIndex.getValue(15), 9.2462);
-        assertDecimalEquals(massIndex.getValue(16), 9.4026);
-        assertDecimalEquals(massIndex.getValue(17), 9.2129);
-        assertDecimalEquals(massIndex.getValue(18), 9.1576);
-        assertDecimalEquals(massIndex.getValue(19), 9.0184);
+        assertDecimalEquals(ces.getValue(5), 45.8424);
+        assertDecimalEquals(ces.getValue(6), 45.7579);
+        assertDecimalEquals(ces.getValue(7), 45.6623);
+        assertDecimalEquals(ces.getValue(8), 45.6199);
+        assertDecimalEquals(ces.getValue(9), 45.6099);
+        assertDecimalEquals(ces.getValue(10), 45.5459);
+        assertDecimalEquals(ces.getValue(11), 45.5807);
+        assertDecimalEquals(ces.getValue(12), 45.6126);
+        assertDecimalEquals(ces.getValue(13), 45.4781);
+        assertDecimalEquals(ces.getValue(14), 45.0605);
     }
 }

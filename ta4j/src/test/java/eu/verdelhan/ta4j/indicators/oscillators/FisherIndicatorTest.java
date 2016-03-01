@@ -20,25 +20,29 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.volatility;
+package eu.verdelhan.ta4j.indicators.oscillators;
 
 import static eu.verdelhan.ta4j.TATestsUtils.assertDecimalEquals;
-import eu.verdelhan.ta4j.Tick;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.mocks.MockTick;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
-public class MassIndexIndicatorTest {
-    
-    private TimeSeries data;
+import eu.verdelhan.ta4j.Tick;
+import eu.verdelhan.ta4j.TimeSeries;
+import eu.verdelhan.ta4j.mocks.MockTick;
+import eu.verdelhan.ta4j.mocks.MockTimeSeries;
 
+public class FisherIndicatorTest {
+
+protected TimeSeries data;
+    
     @Before
     public void setUp() {
+        
         List<Tick> ticks = new ArrayList<Tick>();
-        // open, close, high, low
         ticks.add(new MockTick(44.98, 45.05, 45.17, 44.96));
         ticks.add(new MockTick(45.05, 45.10, 45.15, 44.99));
         ticks.add(new MockTick(45.11, 45.19, 45.32, 45.11));
@@ -59,20 +63,21 @@ public class MassIndexIndicatorTest {
         ticks.add(new MockTick(43.07, 43.55, 43.65, 43.06));
         ticks.add(new MockTick(43.56, 43.95, 43.99, 43.53));
         ticks.add(new MockTick(43.93, 44.47, 44.58, 43.93));
-
-        data = new TimeSeries(ticks);
+        data = new MockTimeSeries(ticks);
     }
-
+    
     @Test
-    public void massIndexUsing3And8TimeFrames() {
-        MassIndexIndicator massIndex = new MassIndexIndicator(data, 3, 8);
-
-        assertDecimalEquals(massIndex.getValue(0), 1);
-        assertDecimalEquals(massIndex.getValue(14), 9.1158);
-        assertDecimalEquals(massIndex.getValue(15), 9.2462);
-        assertDecimalEquals(massIndex.getValue(16), 9.4026);
-        assertDecimalEquals(massIndex.getValue(17), 9.2129);
-        assertDecimalEquals(massIndex.getValue(18), 9.1576);
-        assertDecimalEquals(massIndex.getValue(19), 9.0184);
+    public void fisher() {
+        FisherIndicator fisher = new FisherIndicator(data);
+        
+        assertDecimalEquals(fisher.getValue(10), -3.8634);
+        assertDecimalEquals(fisher.getValue(11), -4.0571);
+        assertDecimalEquals(fisher.getValue(12), -4.2018);
+        assertDecimalEquals(fisher.getValue(13), -4.3354);
+        assertDecimalEquals(fisher.getValue(14), -4.4245);
+        assertDecimalEquals(fisher.getValue(15), -4.5590);
+        assertDecimalEquals(fisher.getValue(16), -4.5996);
+        assertDecimalEquals(fisher.getValue(17), -4.6695);
+        assertDecimalEquals(fisher.getValue(18), -4.5763);
     }
 }

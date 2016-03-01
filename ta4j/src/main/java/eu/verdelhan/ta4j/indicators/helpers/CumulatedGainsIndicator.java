@@ -22,33 +22,34 @@
  */
 package eu.verdelhan.ta4j.indicators.helpers;
 
+import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.Decimal;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.RecursiveCachedIndicator;
+import eu.verdelhan.ta4j.indicators.CachedIndicator;
 
 /**
- * Average of {@link DirectionalMovementDownIndicator directional movement down indicator}.
+ * Cumulated gains indicator.
  * <p>
  */
-public class AverageDirectionalMovementDownIndicator extends RecursiveCachedIndicator<Decimal> {
+public class CumulatedGainsIndicator extends CachedIndicator<Decimal> {
+
+    private final Indicator<Decimal> indicator;
+
     private final int timeFrame;
 
-    private final DirectionalMovementDownIndicator dmdown;
-
-    public AverageDirectionalMovementDownIndicator(TimeSeries series, int timeFrame) {
-        super(series);
+    public CumulatedGainsIndicator(Indicator<Decimal> indicator, int timeFrame) {
+        super(indicator);
+        this.indicator = indicator;
         this.timeFrame = timeFrame;
-        dmdown = new DirectionalMovementDownIndicator(series);
     }
 
     @Override
     protected Decimal calculate(int index) {
-        if (index == 0) {
-            return Decimal.ONE;
+        Decimal sumOfGains = Decimal.ZERO;
+        for (int i = Math.max(1, index - timeFrame + 1); i <= index; i++) {
+            if (indicator.getValue(i).isGreaterThan(indicator.getValue(i - 1))) {
+                sumOfGains = sumOfGains.plus(indicator.getValue(i).minus(indicator.getValue(i - 1)));
+            }
         }
-        Decimal nbPeriods = Decimal.valueOf(timeFrame);
-        Decimal nbPeriodsMinusOne = Decimal.valueOf(timeFrame - 1);
-        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).dividedBy(nbPeriods).plus(dmdown.getValue(index).dividedBy(nbPeriods));
-
+        return sumOfGains;
     }
 }

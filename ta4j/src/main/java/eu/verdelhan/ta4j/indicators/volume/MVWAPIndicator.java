@@ -20,35 +20,34 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.helpers;
+package eu.verdelhan.ta4j.indicators.volume;
 
 import eu.verdelhan.ta4j.Decimal;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.RecursiveCachedIndicator;
+import eu.verdelhan.ta4j.Indicator;
+import eu.verdelhan.ta4j.indicators.CachedIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
 
 /**
- * Average of {@link DirectionalMovementDownIndicator directional movement down indicator}.
- * <p>
+ * The Moving volume weighted average price (MVWAP) Indicator.
+ * @see http://www.investopedia.com/articles/trading/11/trading-with-vwap-mvwap.asp
  */
-public class AverageDirectionalMovementDownIndicator extends RecursiveCachedIndicator<Decimal> {
-    private final int timeFrame;
+public class MVWAPIndicator extends CachedIndicator<Decimal> {
 
-    private final DirectionalMovementDownIndicator dmdown;
-
-    public AverageDirectionalMovementDownIndicator(TimeSeries series, int timeFrame) {
-        super(series);
-        this.timeFrame = timeFrame;
-        dmdown = new DirectionalMovementDownIndicator(series);
+    private final Indicator<Decimal> sma;
+    
+    /**
+     * Constructor.
+     * @param vwap the vwap
+     * @param timeFrame the time frame
+     */
+    public MVWAPIndicator(VWAPIndicator vwap, int timeFrame) {
+        super(vwap);
+        sma = new SMAIndicator(vwap, timeFrame);
     }
 
     @Override
     protected Decimal calculate(int index) {
-        if (index == 0) {
-            return Decimal.ONE;
-        }
-        Decimal nbPeriods = Decimal.valueOf(timeFrame);
-        Decimal nbPeriodsMinusOne = Decimal.valueOf(timeFrame - 1);
-        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).dividedBy(nbPeriods).plus(dmdown.getValue(index).dividedBy(nbPeriods));
-
+        return sma.getValue(index);
     }
+
 }

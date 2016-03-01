@@ -23,42 +23,48 @@
 package eu.verdelhan.ta4j.indicators.trackers;
 
 import static eu.verdelhan.ta4j.TATestsUtils.assertDecimalEquals;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
-import eu.verdelhan.ta4j.mocks.MockTimeSeries;
+
 import org.junit.Before;
 import org.junit.Test;
 
-public class TripleEMAIndicatorTest {
+import eu.verdelhan.ta4j.TimeSeries;
+import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
+import eu.verdelhan.ta4j.mocks.MockTimeSeries;
+
+public class RAVIIndicatorTest {
 
     private TimeSeries data;
-
-    private ClosePriceIndicator closePrice;
-
+    
     @Before
     public void setUp() {
+
         data = new MockTimeSeries(
-                0.73, 0.72, 0.86, 0.72, 0.62,
-                0.76, 0.84, 0.69, 0.65, 0.71,
-                0.53, 0.73, 0.77, 0.67, 0.68
+                110.00, 109.27, 104.69, 107.07, 107.92,
+                107.95, 108.70, 107.97, 106.09, 106.03,
+                108.65, 109.54, 112.26, 114.38, 117.94
+            
         );
-        closePrice = new ClosePriceIndicator(data);
     }
-
+    
     @Test
-    public void tripleEMAUsingTimeFrame5UsingClosePrice() {
-        TripleEMAIndicator tripleEma = new TripleEMAIndicator(closePrice, 5);
-
-        assertDecimalEquals(tripleEma.getValue(0), 0.73);
-        assertDecimalEquals(tripleEma.getValue(1), 0.7213);
-        assertDecimalEquals(tripleEma.getValue(2), 0.818);
-
-        assertDecimalEquals(tripleEma.getValue(6), 0.8034);
-        assertDecimalEquals(tripleEma.getValue(7), 0.7329);
-        assertDecimalEquals(tripleEma.getValue(8), 0.6723);
-
-        assertDecimalEquals(tripleEma.getValue(12), 0.7385);
-        assertDecimalEquals(tripleEma.getValue(13), 0.6993);
-        assertDecimalEquals(tripleEma.getValue(14), 0.6876);
+    public void ravi() {
+        ClosePriceIndicator closePrice = new ClosePriceIndicator(data);
+        RAVIIndicator ravi = new RAVIIndicator(closePrice, 3, 8);
+        
+        assertDecimalEquals(ravi.getValue(0), 0);
+        assertDecimalEquals(ravi.getValue(1), 0);
+        assertDecimalEquals(ravi.getValue(2), 0);
+        assertDecimalEquals(ravi.getValue(3), -0.6937);
+        assertDecimalEquals(ravi.getValue(4), -1.1411);
+        assertDecimalEquals(ravi.getValue(5), -0.1577);
+        assertDecimalEquals(ravi.getValue(6), 0.229);
+        assertDecimalEquals(ravi.getValue(7), 0.2412);
+        assertDecimalEquals(ravi.getValue(8), 0.1202);
+        assertDecimalEquals(ravi.getValue(9), -0.3324);
+        assertDecimalEquals(ravi.getValue(10), -0.5804);
+        assertDecimalEquals(ravi.getValue(11), 0.2013);
+        assertDecimalEquals(ravi.getValue(12), 1.6156);
+        assertDecimalEquals(ravi.getValue(13), 2.6167);
+        assertDecimalEquals(ravi.getValue(14), 4.0799);
     }
 }

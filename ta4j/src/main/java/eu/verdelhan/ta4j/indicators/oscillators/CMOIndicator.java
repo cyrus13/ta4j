@@ -20,35 +20,43 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.helpers;
+package eu.verdelhan.ta4j.indicators.oscillators;
 
+import eu.verdelhan.ta4j.Indicator;
 import eu.verdelhan.ta4j.Decimal;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.RecursiveCachedIndicator;
+import eu.verdelhan.ta4j.indicators.CachedIndicator;
+import eu.verdelhan.ta4j.indicators.helpers.CumulatedGainsIndicator;
+import eu.verdelhan.ta4j.indicators.helpers.CumulatedLossesIndicator;
 
 /**
- * Average of {@link DirectionalMovementDownIndicator directional movement down indicator}.
+ * Chande Momentum Oscillator indicator.
  * <p>
+ * @see http://tradingsim.com/blog/chande-momentum-oscillator-cmo-technical-indicator/
+ * @see http://www.investopedia.com/terms/c/chandemomentumoscillator.asp
  */
-public class AverageDirectionalMovementDownIndicator extends RecursiveCachedIndicator<Decimal> {
-    private final int timeFrame;
+public class CMOIndicator extends CachedIndicator<Decimal> {
 
-    private final DirectionalMovementDownIndicator dmdown;
+    private final CumulatedGainsIndicator cumulatedGains;
 
-    public AverageDirectionalMovementDownIndicator(TimeSeries series, int timeFrame) {
-        super(series);
-        this.timeFrame = timeFrame;
-        dmdown = new DirectionalMovementDownIndicator(series);
+    private final CumulatedLossesIndicator cumulatedLosses;
+
+    /**
+     * Constructor.
+     * @param price a price indicator
+     * @param timeFrame the time frame
+     */
+    public CMOIndicator(Indicator<Decimal> price, int timeFrame) {
+        super(price);
+        cumulatedGains = new CumulatedGainsIndicator(price, timeFrame);
+        cumulatedLosses = new CumulatedLossesIndicator(price, timeFrame);
     }
 
     @Override
     protected Decimal calculate(int index) {
-        if (index == 0) {
-            return Decimal.ONE;
-        }
-        Decimal nbPeriods = Decimal.valueOf(timeFrame);
-        Decimal nbPeriodsMinusOne = Decimal.valueOf(timeFrame - 1);
-        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).dividedBy(nbPeriods).plus(dmdown.getValue(index).dividedBy(nbPeriods));
-
+        Decimal sumOfGains = cumulatedGains.getValue(index);
+        Decimal sumOfLosses = cumulatedLosses.getValue(index);
+        return sumOfGains.minus(sumOfLosses)
+                .dividedBy(sumOfGains.plus(sumOfLosses))
+                .multipliedBy(Decimal.HUNDRED);
     }
 }

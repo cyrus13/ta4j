@@ -22,33 +22,38 @@
  */
 package eu.verdelhan.ta4j.indicators.helpers;
 
-import eu.verdelhan.ta4j.Decimal;
+import static eu.verdelhan.ta4j.TATestsUtils.assertDecimalEquals;
 import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.RecursiveCachedIndicator;
+import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
+import eu.verdelhan.ta4j.mocks.MockTimeSeries;
+import org.junit.Before;
+import org.junit.Test;
 
-/**
- * Average of {@link DirectionalMovementDownIndicator directional movement down indicator}.
- * <p>
- */
-public class AverageDirectionalMovementDownIndicator extends RecursiveCachedIndicator<Decimal> {
-    private final int timeFrame;
+public class CumulatedGainsIndicatorTest {
 
-    private final DirectionalMovementDownIndicator dmdown;
+    private TimeSeries data;
 
-    public AverageDirectionalMovementDownIndicator(TimeSeries series, int timeFrame) {
-        super(series);
-        this.timeFrame = timeFrame;
-        dmdown = new DirectionalMovementDownIndicator(series);
+    @Before
+    public void setUp() {
+        data = new MockTimeSeries(1, 2, 3, 4, 3, 4, 5, 4, 3, 3, 4, 3, 2);
     }
 
-    @Override
-    protected Decimal calculate(int index) {
-        if (index == 0) {
-            return Decimal.ONE;
-        }
-        Decimal nbPeriods = Decimal.valueOf(timeFrame);
-        Decimal nbPeriodsMinusOne = Decimal.valueOf(timeFrame - 1);
-        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).dividedBy(nbPeriods).plus(dmdown.getValue(index).dividedBy(nbPeriods));
+    @Test
+    public void averageGainUsingTimeFrame5UsingClosePrice() {
+        CumulatedGainsIndicator gains = new CumulatedGainsIndicator(new ClosePriceIndicator(data), 5);
 
+        assertDecimalEquals(gains.getValue(0), 0);
+        assertDecimalEquals(gains.getValue(1), 1);
+        assertDecimalEquals(gains.getValue(2), 2);
+        assertDecimalEquals(gains.getValue(3), 3);
+        assertDecimalEquals(gains.getValue(4), 3);
+        assertDecimalEquals(gains.getValue(5), 4);
+        assertDecimalEquals(gains.getValue(6), 4);
+        assertDecimalEquals(gains.getValue(7), 3);
+        assertDecimalEquals(gains.getValue(8), 2);
+        assertDecimalEquals(gains.getValue(9), 2);
+        assertDecimalEquals(gains.getValue(10), 2);
+        assertDecimalEquals(gains.getValue(11), 1);
+        assertDecimalEquals(gains.getValue(12), 1);
     }
 }

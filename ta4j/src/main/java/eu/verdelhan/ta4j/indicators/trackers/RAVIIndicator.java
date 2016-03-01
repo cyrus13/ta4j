@@ -20,35 +20,40 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.indicators.helpers;
+package eu.verdelhan.ta4j.indicators.trackers;
 
 import eu.verdelhan.ta4j.Decimal;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.RecursiveCachedIndicator;
+import eu.verdelhan.ta4j.Indicator;
+import eu.verdelhan.ta4j.indicators.CachedIndicator;
 
 /**
- * Average of {@link DirectionalMovementDownIndicator directional movement down indicator}.
- * <p>
+ * Chande's Range Action Verification Index (RAVI) indicator.
  */
-public class AverageDirectionalMovementDownIndicator extends RecursiveCachedIndicator<Decimal> {
-    private final int timeFrame;
+public class RAVIIndicator extends CachedIndicator<Decimal> {
 
-    private final DirectionalMovementDownIndicator dmdown;
-
-    public AverageDirectionalMovementDownIndicator(TimeSeries series, int timeFrame) {
-        super(series);
-        this.timeFrame = timeFrame;
-        dmdown = new DirectionalMovementDownIndicator(series);
+    private final SMAIndicator shortSma;
+    
+    private final SMAIndicator longSma;
+    
+    /**
+     * Constructor.
+     * @param price the price
+     * @param shortSmaTimeFrame the time frame for the short SMA (usually 7)
+     * @param longSmaTimeFrame the time frame for the long SMA (usually 65)
+     */
+    public RAVIIndicator(Indicator<Decimal> price, int shortSmaTimeFrame, int longSmaTimeFrame) {
+        super(price);
+        shortSma = new SMAIndicator(price, shortSmaTimeFrame);
+        longSma = new SMAIndicator(price, longSmaTimeFrame);
     }
 
     @Override
     protected Decimal calculate(int index) {
-        if (index == 0) {
-            return Decimal.ONE;
-        }
-        Decimal nbPeriods = Decimal.valueOf(timeFrame);
-        Decimal nbPeriodsMinusOne = Decimal.valueOf(timeFrame - 1);
-        return getValue(index - 1).multipliedBy(nbPeriodsMinusOne).dividedBy(nbPeriods).plus(dmdown.getValue(index).dividedBy(nbPeriods));
-
+        Decimal shortMA = shortSma.getValue(index);
+        Decimal longMA = longSma.getValue(index);
+        return shortMA.minus(longMA)
+                .dividedBy(longMA)
+                .multipliedBy(Decimal.HUNDRED);
     }
+
 }
