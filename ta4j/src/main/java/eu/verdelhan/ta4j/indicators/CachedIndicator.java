@@ -22,11 +22,12 @@
  */
 package eu.verdelhan.ta4j.indicators;
 
-import eu.verdelhan.ta4j.Indicator;
-import eu.verdelhan.ta4j.TimeSeries;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import eu.verdelhan.ta4j.Indicator;
+import eu.verdelhan.ta4j.TimeSeries;
 
 /**
  * Cached {@link Indicator indicator}.
@@ -60,6 +61,16 @@ public abstract class CachedIndicator<T> extends AbstractIndicator<T> {
         this(indicator.getTimeSeries());
     }
 
+    public void invalidateCachedResultsAfterIndex(int index){
+    	if (index > highestResultIndex){
+    		return;
+    	}
+    	for (int i=index;i<=highestResultIndex;i++){
+			results.set(i, null);
+		}
+    	highestResultIndex = index;
+    }
+    
     @Override
     public T getValue(int index) {
         TimeSeries series = getTimeSeries();
@@ -69,17 +80,18 @@ public abstract class CachedIndicator<T> extends AbstractIndicator<T> {
             // --> Calculating the value
             return calculate(index);
         }
-
-        // Series is not null
         
+        // Series is not null
         final int removedTicksCount = series.getRemovedTicksCount();
         final int maximumResultCount = getTimeSeries().getMaximumTickCount();
         
         T result;
         if (index < removedTicksCount) {
-            // Result already removed from cache
-            log.trace("{}: result from tick {} already removed from cache, use {}-th instead",
-                    getClass().getSimpleName(), index, removedTicksCount);
+        	if (log.isTraceEnabled()){
+	            // Result already removed from cache
+	            log.trace("{}: result from tick {} already removed from cache, use {}-th instead",
+	                    getClass().getSimpleName(), index, removedTicksCount);
+        	}
             increaseLengthTo(removedTicksCount, maximumResultCount);
             highestResultIndex = removedTicksCount;
             result = results.get(0);
@@ -91,6 +103,9 @@ public abstract class CachedIndicator<T> extends AbstractIndicator<T> {
             increaseLengthTo(index, maximumResultCount);
             if (index > highestResultIndex) {
                 // Result not calculated yet
+            	if (log.isTraceEnabled()){
+            		log.trace("{}: Result not found in cache. Current index: {}",getClass().getSimpleName(),index);
+            	}
                 highestResultIndex = index;
                 result = calculate(index);
                 results.set(results.size()-1, result);
@@ -100,6 +115,10 @@ public abstract class CachedIndicator<T> extends AbstractIndicator<T> {
                 result = results.get(resultInnerIndex);
                 if (result == null) {
                     result = calculate(index);
+                }else{
+                	if (log.isTraceEnabled()){
+                		log.trace("{}: Result found in cache. Current index: {}",getClass().getSimpleName(),index);
+                	}
                 }
                 results.set(resultInnerIndex, result);
             }
@@ -149,5 +168,13 @@ public abstract class CachedIndicator<T> extends AbstractIndicator<T> {
                 results.remove(0);
             }
         }
+    }
+    
+    public T getLastValue(){
+    	if (getTimeSeries().getEnd() >=0){
+    		return getValue(getTimeSeries().getEnd());
+    	}else{
+    		return null;
+    	}
     }
 }

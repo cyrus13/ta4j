@@ -20,53 +20,10 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package eu.verdelhan.ta4j.trading.rules;
+package eu.verdelhan.ta4j;
 
-import eu.verdelhan.ta4j.Rule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- * An abstract trading {@link Rule rule}.
- */
-public abstract class AbstractRule implements Rule {
-
-    /** The logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-
-    @Override
-    public Rule and(Rule rule) {
-        return new AndRule(this, rule);
-    }
-
-    @Override
-    public Rule or(Rule rule) {
-        return new OrRule(this, rule);
-    }
-
-    @Override
-    public Rule xor(Rule rule) {
-        return new XorRule(this, rule);
-    }
-
-    @Override
-    public Rule negation() {
-        return new NotRule(this);
-    }
-
-    @Override
-    public boolean isSatisfied(int index) {
-        return isSatisfied(index, null);
-    }
-    
-    /**
-     * Traces the isSatisfied() method calls.
-     * @param index the tick index
-     * @param isSatisfied true if the rule is satisfied, false otherwise
-     */
-    protected void traceIsSatisfied(int index, boolean isSatisfied) {
-    	if (log.isTraceEnabled()){
-    		log.trace("{}#isSatisfied({}): {}", getClass().getSimpleName(), index, isSatisfied);
-    	}
-    }
+public final class TestUtil {
+	private TestUtil(){}
+	
+	public static final double ESPILON = 0.00001;
 }

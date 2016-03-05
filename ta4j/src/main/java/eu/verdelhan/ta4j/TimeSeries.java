@@ -62,7 +62,7 @@ public class TimeSeries {
     private int removedTicksCount = 0;
     /** True if the current series is a sub-series, false otherwise */
     private boolean subSeries = false;
-
+    
     /**
      * Constructor.
      * @param name the name of the series
@@ -440,6 +440,12 @@ public class TimeSeries {
     private void computeTimePeriod() {
 
         Period minPeriod = null;
+        
+        // If only one item in series, get the period of that item.
+        if ((beginIndex==0)&&(endIndex==0)){
+        	minPeriod = getLastTick().getTimePeriod();
+        }
+        
         for (int i = beginIndex; i < endIndex; i++) {
             // For each tick interval...
             // Looking for the minimum period.
@@ -512,8 +518,8 @@ public class TimeSeries {
         }
         return beginIndexes;
     }
-
-    /**
+	
+	/**
      * @param series a time series
      * @param index an out of bounds tick index
      * @return a message for an OutOfBoundsException
